@@ -8,6 +8,9 @@ on:
   schedule:
     - cron: '0 0 * * *'
 
+permissions:
+  contents: read
+
 jobs:
   build:
     strategy:
@@ -27,16 +30,21 @@ jobs:
           POSTGRES_DB: postgres
 
     steps:
+    - name: Harden Runner
+      uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+      with:
+        egress-policy: audit
+
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
 
     - name: Setup Go
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
       with:
         go-version: ${{ matrix.go-version }}
 
     - name: golangci-lint cache
-      uses: actions/cache@v4
+      uses: actions/cache@3624ceb22c1c5a301c8db4169662070a689d9ea8 # v4.1.1
       with:
         path: ~/go/bin/golangci-lint
         key: ${{ runner.os }}-${{ matrix.go-version }}-golangci-lint-v1.60.1
@@ -46,7 +54,7 @@ jobs:
         make linters test
 
     - name: Upload coverage
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@604373da6381bf24206979c74d06a550515601b9 # v4.4.1
       with:
         name: coverage_${{ matrix.go-version }}_${{ matrix.postgres-version }}
         path: coverage.html
